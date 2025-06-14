@@ -21,14 +21,19 @@ def scanning(outputFile, startingRange, finishingRange, ipAddress, STARTING_TIME
 
         for bit in range(startingRange, finishingRange + 1):
             dynamicIp = f"{ip}.{bit}.0/24"
-            print(f"Scanning {dynamicIp}\t -")
+            print(f"Scanning {dynamicIp}\n")
             
+            #TODO message d'erreur nmap si qlq a pas nmap + rajouter dans le read me + implémenter un fichier automatique si pas mis
             commandIp = f"sudo nmap -p 80,443,8080 -T4 -sS -sV -R {dynamicIp}".split()
-            result_scan = subprocess.run(commandIp, capture_output= True, text=True)
+            try : 
+                result_scan = subprocess.run(commandIp, capture_output= True, text=True)
+                result = result_scan.stdout
+            except FileNotFoundError:
+                print("The command 'nmap' wasn't found on your computer. Please download it before executing this program.")
+                file.write("Error : nmap not downloaded")
+                return
             
-            result = result_scan.stdout
             print(result,"\n")
-            
             file.write(
                 f"Scan of {dynamicIp}\n"
                 + result
@@ -60,7 +65,7 @@ def main():
     STARTING_TIME = time.time()
 
     parser = argparse.ArgumentParser(description= "Tool to scan active networks")
-    parser.add_argument('--output', type=str, required=True, help="Name of the output file")
+    parser.add_argument('--output', type=str, default="scanned_networks.txt", help="Name of the output file")
     parser.add_argument('--ip', type=isValidIPNetwork, required=True, help="Network IP in format xxx.xxx.xxx.0/24")
     parser.add_argument('--finishing', type=isValidNumber, default=255, help="End of third IP octet, range : 0 to 255 included")
 
